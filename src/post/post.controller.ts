@@ -1,13 +1,14 @@
 import {
   Body,
   Controller,
-  Delete,
   Get,
   Param,
-  Patch,
+  ParseIntPipe,
   Post,
+  Query,
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+import { PostFindQuery } from 'src/types';
 import { PostService } from './post.service';
 
 @Controller('post')
@@ -20,8 +21,11 @@ export class PostController {
   }
 
   @Get()
-  findAll() {
-    return this.postService.findAll();
+  find(
+    @Query('query') query: PostFindQuery,
+    @Query('page', ParseIntPipe) page: number,
+  ) {
+    return this.postService.findAll(query, page);
   }
 
   @Get(':id')
@@ -29,13 +33,13 @@ export class PostController {
     return this.postService.findOne(+id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePostDto) {
-    return this.postService.update(+id, updatePostDto);
-  }
+  // @Patch(':id')
+  // update(@Param('id') id: string, @Body() updatePostDto) {
+  //   return this.postService.update(+id, updatePostDto);
+  // }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.postService.remove(+id);
-  }
+  // @Delete(':id')
+  // remove(@Param('id') id: string) {
+  //   return this.postService.remove(+id);
+  // }
 }
