@@ -116,14 +116,14 @@ async function main() {
         info: JSON.stringify({
           like: randomNum(0, 100),
           shareCount: randomNum(0, 100),
-          participageImages:
+          participateImages:
             participatesNum === 0
               ? []
               : Array.from(
                   { length: participatesNum >= 10 ? 10 : participatesNum },
                   () => `https://picsum.photos/id/${randomNum(0, 100)}/100/100`,
                 ),
-          participageCount: participatesNum,
+          participateCount: participatesNum,
         }),
         title: `Card ${index + 1}`,
         description: generateRandomDescription(12, 20),

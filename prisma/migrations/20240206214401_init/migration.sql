@@ -16,24 +16,13 @@ CREATE TABLE "Post" (
     "thumbnail" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "description" TEXT,
-    "content" TEXT NOT NULL,
+    "info" JSONB NOT NULL,
+    "content" JSONB NOT NULL,
     "userId" INTEGER NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Post_pkey" PRIMARY KEY ("postId")
-);
-
--- CreateTable
-CREATE TABLE "PostInfo" (
-    "id" SERIAL NOT NULL,
-    "like" INTEGER NOT NULL DEFAULT 0,
-    "shareCount" INTEGER NOT NULL DEFAULT 0,
-    "participages" TEXT[],
-    "participageCount" INTEGER NOT NULL DEFAULT 0,
-    "postId" TEXT NOT NULL,
-
-    CONSTRAINT "PostInfo_pkey" PRIMARY KEY ("postId")
 );
 
 -- CreateTable
@@ -53,9 +42,6 @@ CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- AddForeignKey
 ALTER TABLE "Post" ADD CONSTRAINT "Post_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "PostInfo" ADD CONSTRAINT "PostInfo_postId_fkey" FOREIGN KEY ("postId") REFERENCES "Post"("postId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Comment" ADD CONSTRAINT "Comment_postId_fkey" FOREIGN KEY ("postId") REFERENCES "Post"("postId") ON DELETE RESTRICT ON UPDATE CASCADE;

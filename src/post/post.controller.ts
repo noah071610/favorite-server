@@ -2,7 +2,6 @@ import {
   Body,
   Controller,
   Get,
-  Param,
   ParseIntPipe,
   Post,
   Query,
@@ -21,16 +20,16 @@ export class PostController {
   }
 
   @Get()
+  findOne(@Query('postId') postId: string) {
+    return this.postService.findOne(postId);
+  }
+
+  @Get('all')
   find(
     @Query('query') query: PostFindQuery,
     @Query('page', ParseIntPipe) page: number,
   ) {
     return this.postService.findAll(query, page);
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.postService.findOne(+id);
   }
 
   // @Patch(':id')

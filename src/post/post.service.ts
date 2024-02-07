@@ -6,7 +6,7 @@ import { prismaExclude } from 'src/config/database/prismaExclude';
 import { DatabaseService } from 'src/database/database.service';
 import { PostFindQuery } from 'src/types';
 
-const pageSize = 3;
+const pageSize = 10;
 
 @Injectable()
 export class PostService {
@@ -27,7 +27,12 @@ export class PostService {
       skip,
       take: pageSize,
       orderBy: { createdAt: 'desc' },
-      select: prismaExclude('Post', ['info', 'thumbnail']),
+      select: {
+        user: {
+          select: prismaExclude('User', ['createdAt', 'email']),
+        },
+        ...prismaExclude('Post', ['content']),
+      },
     });
 
     await this.cacheService.set('test', posts);
@@ -35,8 +40,26 @@ export class PostService {
     return posts;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} post`;
+  async findOne(postId: string) {
+    const post = await this.databaseService.post.findUnique({
+      where: {
+        postId,
+      },
+      select: {
+        ...prismaExclude('Post', ['info']),
+        user: {
+          select: prismaExclude('User', ['createdAt', 'email']),
+        },
+        comments: {
+          include: {
+            user: {
+              select: prismaExclude('User', ['createdAt', 'email']),
+            },
+          },
+        },
+      },
+    });
+    return post;
   }
 
   update(id: number) {
