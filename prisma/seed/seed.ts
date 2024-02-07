@@ -93,15 +93,17 @@ async function main() {
     data: [
       {
         userId: userId++,
-        email: 'noah071610@gmail.com',
+        email: 'noahh0310@gmail.com',
         userImage: 'https://avatars.githubusercontent.com/u/74864925?v=4',
         userName: '노아쨩',
+        password: '123123123',
       },
       {
         userId: userId++,
-        email: 'noah071610@naver.com',
+        email: 'noahh0310@naver.com',
         userImage: 'https://avatars.githubusercontent.com/u/74864925?v=4',
         userName: '네이버노아',
+        password: '123123123',
       },
     ],
   });

@@ -1,5 +1,5 @@
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { Cache } from 'cache-manager';
 import { prismaExclude } from 'src/config/database/prismaExclude';
@@ -37,7 +37,10 @@ export class PostService {
 
     await this.cacheService.set('test', posts);
 
-    return posts;
+    return posts.map((post) => ({
+      ...post,
+      info: JSON.parse(post.info as string),
+    }));
   }
 
   async findOne(postId: string) {
@@ -59,7 +62,12 @@ export class PostService {
         },
       },
     });
-    return post;
+
+    if (!post) throw new NotFoundException('포스트를 찾을 수 없어요');
+
+    const content = JSON.parse(post.content as string);
+
+    return { ...post, content };
   }
 
   update(id: number) {
