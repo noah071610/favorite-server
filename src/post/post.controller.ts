@@ -1,13 +1,13 @@
 import {
   Body,
   Controller,
-  Delete,
   Get,
-  Param,
-  Patch,
+  ParseIntPipe,
   Post,
+  Query,
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+import { PostFindQuery } from 'src/types';
 import { PostService } from './post.service';
 
 @Controller('post')
@@ -15,27 +15,35 @@ export class PostController {
   constructor(private readonly postService: PostService) {}
 
   @Post()
-  create(@Body() createPostDto: Prisma.PostCreateInput) {
-    return this.postService.create(createPostDto);
+  createNewPost(@Body() createPostDto: Prisma.PostCreateInput) {
+    return this.postService.createNewPost(createPostDto);
   }
 
   @Get()
-  findAll() {
-    return this.postService.findAll();
+  findOne(@Query('postId') postId: string) {
+    return this.postService.findOne(postId);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.postService.findOne(+id);
+  @Get('all')
+  find(
+    @Query('query') query: PostFindQuery,
+    @Query('page', ParseIntPipe) page: number,
+  ) {
+    return this.postService.findAll(query, page);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePostDto) {
-    return this.postService.update(+id, updatePostDto);
+  @Post()
+  newPost(@Query('postId') postId: string) {
+    return this.postService.findOne(postId);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.postService.remove(+id);
-  }
+  // @Patch(':id')
+  // update(@Param('id') id: string, @Body() updatePostDto) {
+  //   return this.postService.update(+id, updatePostDto);
+  // }
+
+  // @Delete(':id')
+  // remove(@Param('id') id: string) {
+  //   return this.postService.remove(+id);
+  // }
 }

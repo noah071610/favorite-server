@@ -12,9 +12,10 @@ datasource db {
 
 
 model User {
-  id  Int    @default(autoincrement())
-  userId  String @id
+  userId  Int  @id @default(autoincrement())
   email String @unique
+  password String
+  // token String
   userName  String
   userImage  String
   posts Post[]
@@ -23,18 +24,17 @@ model User {
 }
 
 model Post {
-  id  Int    @default(autoincrement())
   postId String @id
   type String
   thumbnail String
-  title String
+  title String 
   description String?
-  content String
+  info Json
+  content Json
+  chartDescription String?
 
-  info PostInfo?
-
-  userId String
-  user User  @relation(fields: [postId], references: [userId])
+  userId Int
+  user User  @relation(fields: [userId], references: [userId])
 
   comments Comment[]
 
@@ -43,28 +43,17 @@ model Post {
 
 }
 
-model PostInfo {
-  id  Int    @default(autoincrement())
-  like Int @default(0)
-  shareCount Int @default(0)
-  participages String[]
-  participageCount Int @default(0)
-
-  postId String @id
-  post Post @relation(fields: [postId], references: [postId])
-}
 
 model Comment {
-  id  Int    @default(autoincrement())
-  commentId String @id
+  commentId  Int  @id  @default(autoincrement())
   text String
   like Int
 
   postId String
-  post Post @relation(fields: [commentId], references: [postId])
+  post Post @relation(fields: [postId], references: [postId])
 
-  userId String
-  user User  @relation(fields: [postId], references: [userId])
+  userId Int
+  user User  @relation(fields: [userId], references: [userId])
 
   createdAt DateTime @default(now())
 }
