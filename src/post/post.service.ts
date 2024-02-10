@@ -90,10 +90,6 @@ export class PostService {
     return { ...post, content };
   }
 
-  async uploadImage(file: Express.Multer.File) {
-    return ``;
-  }
-
   remove(id: number) {
     return `This action removes a #${id} post`;
   }

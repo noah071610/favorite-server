@@ -1,10 +1,11 @@
 import { CacheModule } from '@nestjs/cache-manager';
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DatabaseModule } from './database/database.module';
-import { FileModule } from './file/file.module';
 import { PostModule } from './post/post.module';
+import { UploadModule } from './upload/upload.module';
 import { UserModule } from './user/user.module';
 
 // memo: 라이브러리 특성상 어쩔 수 없다.
@@ -19,10 +20,11 @@ const redisStore = require('cache-manager-redis-store').redisStore;
       host: 'localhost',
       port: 6379,
     }),
+    ConfigModule.forRoot({ isGlobal: true }),
     PostModule,
     DatabaseModule,
     UserModule,
-    FileModule,
+    UploadModule,
   ],
   controllers: [AppController],
   providers: [AppService],
