@@ -10,6 +10,7 @@ async function bootstrap() {
       // credentials: true, // 자격 증명 헤더를 허용합니다.
       // maxAge: 3600, // 프리플라이트(Pre-flight) 요청의 최대 지속 시간을 지정합니다.
     },
+    rawBody: true,
   });
 
   await app.listen(5555);

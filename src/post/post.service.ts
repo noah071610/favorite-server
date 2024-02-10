@@ -15,8 +15,28 @@ export class PostService {
     @Inject(CACHE_MANAGER) private cacheService: Cache,
   ) {}
 
-  create(createPostDto: Prisma.PostCreateInput) {
-    return this.databaseService.post.create({ data: createPostDto });
+  async createNewPost(createPostDto: Prisma.PostCreateInput) {
+    if (createPostDto.title.trim().length < 3)
+      return '타이틀은 공백을 제외하고 3글자 이상으로 작성해주세요!';
+    // if (!createPostDto.userId) return '로그인이 필요해요'; //todo: 이건 그래도 로그인 시켜야겠지..?
+    if (!createPostDto.content) return '후보가 없네요.';
+    if (!createPostDto.type) return '타입이 없네요.';
+
+    const content = createPostDto.content as any[]; // todo: 타입.. 하..
+    if (!content.length) return '후보가 없네요.';
+    if (!content.every(({ title }) => !!title.trim()))
+      return '타이틀이 없는 후보가 존재해요';
+    createPostDto.content = JSON.stringify(content);
+
+    const info = createPostDto.info as { [key: string]: any }; // todo: 타입.. 하..
+    if (!Object.keys(info).every((key) => typeof info[key] !== 'undefined'))
+      return '메타데이터 하나가 누락되었어요.';
+    createPostDto.info = JSON.stringify(info);
+
+    const newPost = await this.databaseService.post.create({
+      data: createPostDto,
+    });
+    return newPost.postId;
   }
 
   async findAll(query: PostFindQuery, page: number) {
@@ -70,8 +90,8 @@ export class PostService {
     return { ...post, content };
   }
 
-  update(id: number) {
-    return `This action updates a #${id} post`;
+  async uploadImage(file: Express.Multer.File) {
+    return ``;
   }
 
   remove(id: number) {

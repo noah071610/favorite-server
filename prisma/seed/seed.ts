@@ -114,6 +114,7 @@ async function main() {
       return {
         postId: postIdArr[index],
         userId: 1,
+        chartDescription: '차트에 대해 설명',
         content: JSON.stringify(candidates),
         info: JSON.stringify({
           like: randomNum(0, 100),

@@ -3,6 +3,7 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DatabaseModule } from './database/database.module';
+import { FileModule } from './file/file.module';
 import { PostModule } from './post/post.module';
 import { UserModule } from './user/user.module';
 
@@ -21,6 +22,7 @@ const redisStore = require('cache-manager-redis-store').redisStore;
     PostModule,
     DatabaseModule,
     UserModule,
+    FileModule,
   ],
   controllers: [AppController],
   providers: [AppService],
