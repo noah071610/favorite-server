@@ -5,8 +5,7 @@ import { Cache } from 'cache-manager';
 import { prismaExclude } from 'src/config/database/prismaExclude';
 import { DatabaseService } from 'src/database/database.service';
 import { PostFindQuery } from 'src/types';
-
-const pageSize = 10;
+import { PostInfoDto } from './dto/postInfo.dto';
 
 @Injectable()
 export class PostService {
@@ -39,14 +38,13 @@ export class PostService {
     return newPost.postId;
   }
 
-  async findAll(query: PostFindQuery, page: number) {
-    //todo: 쿼리에 상응하는 서비스 작성
-    const skip = (page - 1) * pageSize;
+  async findAll(query: PostFindQuery, cursor: number) {
+    const pageSize = 12;
 
     const posts = await this.databaseService.post.findMany({
-      skip,
+      skip: cursor * pageSize,
       take: pageSize,
-      orderBy: { createdAt: 'desc' },
+      orderBy: { id: 'desc' },
       select: {
         user: {
           select: prismaExclude('User', ['createdAt', 'email']),
@@ -88,6 +86,50 @@ export class PostService {
     const content = JSON.parse(post.content as string);
 
     return { ...post, content };
+  }
+
+  async like(userId: number, postId: string) {
+    const post = await this.databaseService.post.findUnique({
+      where: {
+        postId,
+      },
+    });
+
+    const info: PostInfoDto = JSON.parse(post.info as string);
+    info.like++;
+    info.participateCount++;
+    if (info.participateImages.length < 10) {
+      const user = await this.databaseService.user.findUnique({
+        where: {
+          userId,
+        },
+      });
+      info.participateImages = [...info.participateImages, user.userImage];
+    }
+
+    await this.databaseService.user.update({
+      where: {
+        userId,
+      },
+      data: {
+        liked: {
+          create: {
+            postId,
+          },
+        },
+      },
+    });
+
+    await this.databaseService.post.update({
+      where: {
+        postId,
+      },
+      data: {
+        info: JSON.stringify(info),
+      },
+    });
+
+    return { msg: 'ok' };
   }
 
   remove(id: number) {

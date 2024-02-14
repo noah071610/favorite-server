@@ -25,10 +25,20 @@ export class UserService {
       where: {
         userId,
       },
-      select: prismaExclude('User', ['password', 'createdAt']),
+      select: {
+        liked: {
+          select: {
+            postId: true,
+          },
+        },
+        ...prismaExclude('User', ['password', 'createdAt']),
+      },
     });
 
-    return user;
+    return {
+      ...user,
+      liked: user.liked ? user.liked.map((v) => v.postId) : [],
+    };
   }
 
   update(id: number) {

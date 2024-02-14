@@ -20,10 +20,12 @@ model User {
   userImage  String
   posts Post[]
   comments Comment[]
+  liked LikePost[]
   createdAt DateTime @default(now())
 }
 
 model Post {
+  id Int @default(autoincrement())
   postId String @id
   type String
   thumbnail String
@@ -56,4 +58,12 @@ model Comment {
   user User  @relation(fields: [userId], references: [userId])
 
   createdAt DateTime @default(now())
+}
+
+
+model LikePost {
+  postId String @id
+
+  userId Int
+  user User @relation(fields: [userId], references: [userId])
 }

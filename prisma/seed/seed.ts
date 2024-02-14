@@ -51,6 +51,33 @@ const candidates = [
     description: `약학에 정통해서 주들 중에서 유일하게 독을 사용하여 도깨비를 죽인다. 귀살대 내에서 의료장교 역할을 하고 있으며 자신의 거처인 '나비저택'을 병동으로 사용하고 있다. 이 저택에는 각각 귀살대원은 아니지만 키요, 스미, 나호라는 아이들이 저택 사용인 겸 간호사로 일하고 있다. 귀살대 대원 중에서는 칸자키 아오이와 자신의 츠구코인 츠유리 카나오가 직속 부하로서 일하고 있다.`,
     count: 9,
   },
+  {
+    number: 6,
+    listId: nanoid(10),
+    imageSrc:
+      'https://blog.kakaocdn.net/dn/WGp8A/btqD1NJN902/lkK4e34JIBVG5VsrczH3h1/img.jpg',
+    title: '츠유리 카나오',
+    description: `약학에 정통해서 주들 중에서 유일하게 독을 사용하여 도깨비를 죽인다. 귀살대 내에서 의료장교 역할을 하고 있으며 자신의 거처인 '나비저택'을 병동으로 사용하고 있다. 이 저택에는 각각 귀살대원은 아니지만 키요, 스미, 나호라는 아이들이 저택 사용인 겸 간호사로 일하고 있다. 귀살대 대원 중에서는 칸자키 아오이와 자신의 츠구코인 츠유리 카나오가 직속 부하로서 일하고 있다.`,
+    count: 9,
+  },
+  {
+    number: 7,
+    listId: nanoid(10),
+    imageSrc:
+      'https://blog.kakaocdn.net/dn/WGp8A/btqD1NJN902/lkK4e34JIBVG5VsrczH3h1/img.jpg',
+    title: '츠유리 카나오',
+    description: `약학에 정통해서 주들 중에서 유일하게 독을 사용하여 도깨비를 죽인다. 귀살대 내에서 의료장교 역할을 하고 있으며 자신의 거처인 '나비저택'을 병동으로 사용하고 있다. 이 저택에는 각각 귀살대원은 아니지만 키요, 스미, 나호라는 아이들이 저택 사용인 겸 간호사로 일하고 있다. 귀살대 대원 중에서는 칸자키 아오이와 자신의 츠구코인 츠유리 카나오가 직속 부하로서 일하고 있다.`,
+    count: 9,
+  },
+  {
+    number: 8,
+    listId: nanoid(10),
+    imageSrc:
+      'https://blog.kakaocdn.net/dn/WGp8A/btqD1NJN902/lkK4e34JIBVG5VsrczH3h1/img.jpg',
+    title: '츠유리 카나오',
+    description: `약학에 정통해서 주들 중에서 유일하게 독을 사용하여 도깨비를 죽인다. 귀살대 내에서 의료장교 역할을 하고 있으며 자신의 거처인 '나비저택'을 병동으로 사용하고 있다. 이 저택에는 각각 귀살대원은 아니지만 키요, 스미, 나호라는 아이들이 저택 사용인 겸 간호사로 일하고 있다. 귀살대 대원 중에서는 칸자키 아오이와 자신의 츠구코인 츠유리 카나오가 직속 부하로서 일하고 있다.`,
+    count: 9,
+  },
 ];
 
 const randomNum = (min: number, max: number) =>
@@ -86,7 +113,7 @@ const generateRandomDescription = (min: number, max: number) => {
 let userId = 1;
 let commentId = 1;
 
-const postIdArr = Array.from({ length: 10 }, () => nanoid(10));
+const postIdArr = Array.from({ length: 50 }, () => nanoid(10));
 
 async function main() {
   await prisma.user.createMany({
@@ -109,9 +136,10 @@ async function main() {
   });
 
   await prisma.post.createMany({
-    data: Array.from({ length: 10 }, (_, index) => {
+    data: Array.from({ length: 50 }, (_, index) => {
       const participatesNum = randomNum(0, 100);
       return {
+        id: index + 1,
         postId: postIdArr[index],
         userId: 1,
         chartDescription: '차트에 대해 설명',
@@ -129,8 +157,12 @@ async function main() {
           participateCount: participatesNum,
         }),
         title: `Card ${index + 1}`,
-        description: generateRandomDescription(12, 20),
-        type: 'vote',
+        description: ['', generateRandomDescription(8, 40)][
+          Math.floor(Math.random() * 2)
+        ],
+        type:
+          'vote' +
+          ['-image', '-text', '-imageText'][Math.floor(Math.random() * 3)],
         thumbnail: `https://picsum.photos/id/${index * 10}/1200/800`,
       };
     }),
