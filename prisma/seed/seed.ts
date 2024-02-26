@@ -136,14 +136,17 @@ async function main() {
   });
 
   await prisma.post.createMany({
-    data: Array.from({ length: 50 }, (_, index) => {
+    data: Array.from({ length: 3 }, (_, index) => {
       const participatesNum = randomNum(0, 100);
       return {
         id: index + 1,
         postId: postIdArr[index],
         userId: 1,
-        chartDescription: '차트에 대해 설명',
-        content: JSON.stringify(candidates),
+        content: JSON.stringify({
+          candidates,
+          layout: ['image', 'text', 'imageText'][index % 3],
+          chartDescription: '차트에 대해 설명',
+        }),
         info: JSON.stringify({
           like: randomNum(0, 100),
           shareCount: randomNum(0, 100),
@@ -156,20 +159,114 @@ async function main() {
                 ),
           participateCount: participatesNum,
         }),
+        format: 'default',
         title: `Card ${index + 1}`,
         description: ['', generateRandomDescription(8, 40)][
           Math.floor(Math.random() * 2)
         ],
-        type:
-          'vote' +
-          ['-image', '-text', '-imageText'][Math.floor(Math.random() * 3)],
+        type: 'polling',
+        thumbnail: `https://picsum.photos/id/${index * 10}/1200/800`,
+      };
+    }),
+  });
+
+  await prisma.post.createMany({
+    data: Array.from({ length: 3 }, (_, index) => {
+      const participatesNum = randomNum(0, 100);
+      return {
+        id: index + 4,
+        postId: postIdArr[index + 3],
+        userId: 1,
+        content: JSON.stringify({
+          left: {
+            listId: nanoid(10),
+            imageSrc:
+              'https://i.namu.wiki/i/AHbK9_4JobeNC3DXXffmG3oPChsPVdPTii7JnhJVElIWtz8pQqxlBOY5e9_LI10s7CV0OJOptLEEG15ProZaCg.webp',
+            title: '코쵸우 시노부',
+            count: randomNum(250, 600),
+          },
+          right: {
+            listId: nanoid(10),
+            imageSrc:
+              'https://i.namu.wiki/i/AHbK9_4JobeNC3DXXffmG3oPChsPVdPTii7JnhJVElIWtz8pQqxlBOY5e9_LI10s7CV0OJOptLEEG15ProZaCg.webp',
+            title: '코쵸우 시노부',
+            count: randomNum(250, 600),
+          },
+        }),
+        info: JSON.stringify({
+          like: randomNum(0, 100),
+          shareCount: randomNum(0, 100),
+          participateImages:
+            participatesNum === 0
+              ? []
+              : Array.from(
+                  { length: participatesNum >= 10 ? 10 : participatesNum },
+                  () => `https://picsum.photos/id/${randomNum(0, 100)}/100/100`,
+                ),
+          participateCount: participatesNum,
+        }),
+        format: 'default',
+        title: `Contest Card ${index + 1}`,
+        description: ['', generateRandomDescription(8, 40)][
+          Math.floor(Math.random() * 2)
+        ],
+        type: 'contest',
+        thumbnail: `https://picsum.photos/id/${index * 10}/1200/800`,
+      };
+    }),
+  });
+
+  await prisma.post.createMany({
+    data: Array.from({ length: 3 }, (_, index) => {
+      const participatesNum = randomNum(0, 100);
+      return {
+        id: index + 7,
+        postId: postIdArr[index + 7],
+        userId: 1,
+        content: JSON.stringify({
+          candidates: [
+            ...candidates,
+            ...candidates,
+            ...candidates,
+            ...candidates,
+          ].map(({ imageSrc }, t) => {
+            const win = randomNum(1, 100);
+            return {
+              listId: nanoid(10),
+              title: `${t + index + 1}번 후보`,
+              imageSrc,
+              win: win,
+              lose: 100 - win,
+              pick: randomNum(0, 100),
+              number: t + 1,
+            };
+          }),
+        }),
+        info: JSON.stringify({
+          like: randomNum(0, 100),
+          shareCount: randomNum(0, 100),
+          participateImages:
+            participatesNum === 0
+              ? []
+              : Array.from(
+                  { length: participatesNum >= 10 ? 10 : participatesNum },
+                  () => `https://picsum.photos/id/${randomNum(0, 100)}/100/100`,
+                ),
+          participateCount: participatesNum,
+        }),
+        format: 'default',
+        title: `Tour Card ${index + 1}`,
+        description: ['', generateRandomDescription(8, 40)][
+          Math.floor(Math.random() * 2)
+        ],
+        type: 'tournament',
         thumbnail: `https://picsum.photos/id/${index * 10}/1200/800`,
       };
     }),
   });
 
   await prisma.comment.createMany({
-    data: Array.from({ length: 10 }, (_, i) => {
+    data: Array.from({ length: 3 }, (_, i) => {
       const arr = [];
       for (let j = 0; j < 5; j++) {
         arr.push({

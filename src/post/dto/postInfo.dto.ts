@@ -20,4 +20,10 @@ export class PostInfoDto {
   @IsNumber()
   @Min(0) // 0 이상인지 확인
   participateCount: number;
+
+  @IsNumber()
+  isSecret: number;
+
+  @IsNumber()
+  isNoComments: number;
 }

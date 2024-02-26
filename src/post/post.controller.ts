@@ -15,8 +15,8 @@ export class PostController {
   constructor(private readonly postService: PostService) {}
 
   @Post()
-  createNewPost(@Body() createPostDto: Prisma.PostCreateInput) {
-    return this.postService.createNewPost(createPostDto);
+  createPost(@Body() createPostDto: Prisma.PostCreateInput) {
+    return this.postService.createPost(createPostDto);
   }
 
   @Get()
@@ -25,15 +25,15 @@ export class PostController {
   }
 
   @Get('all')
-  find(
+  findAllPosts(
     // @Query('query') query: PostFindQuery,
     @Query('cursor', ParseIntPipe) cursor: number,
   ) {
-    return this.postService.findAll('all', cursor);
+    return this.postService.findAllPosts('all', cursor);
   }
 
-  @Post()
-  newPost(@Query('postId') postId: string) {
+  @Get()
+  findPost(@Query('postId') postId: string) {
     return this.postService.findOne(postId);
   }
 

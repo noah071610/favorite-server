@@ -5,7 +5,10 @@ import { Cache } from 'cache-manager';
 import { prismaExclude } from 'src/config/database/prismaExclude';
 import { DatabaseService } from 'src/database/database.service';
 import { PostFindQuery } from 'src/types';
+import { ContestContentDto } from './dto/contestContent.dto';
+import { PollingContentDto } from './dto/pollingContent.dto';
 import { PostInfoDto } from './dto/postInfo.dto';
+import { TournamentContentDto } from './dto/tournamentContent.dto';
 
 @Injectable()
 export class PostService {
@@ -14,31 +17,50 @@ export class PostService {
     @Inject(CACHE_MANAGER) private cacheService: Cache,
   ) {}
 
-  async createNewPost(createPostDto: Prisma.PostCreateInput) {
+  async createPost(createPostDto: Prisma.PostCreateInput) {
     if (createPostDto.title.trim().length < 3)
       return '타이틀은 공백을 제외하고 3글자 이상으로 작성해주세요!';
-    // if (!createPostDto.userId) return '로그인이 필요해요'; //todo: 이건 그래도 로그인 시켜야겠지..?
     if (!createPostDto.content) return '후보가 없네요.';
     if (!createPostDto.type) return '타입이 없네요.';
 
-    const content = createPostDto.content as any[]; // todo: 타입.. 하..
-    if (!content.length) return '후보가 없네요.';
-    if (!content.every(({ title }) => !!title.trim()))
-      return '타이틀이 없는 후보가 존재해요';
-    createPostDto.content = JSON.stringify(content);
+    if (
+      createPostDto.type === 'polling' ||
+      createPostDto.type === 'tournament'
+    ) {
+      const content: PollingContentDto | TournamentContentDto =
+        createPostDto.content as any;
+      if (!content.candidates.length) return '후보가 없네요.';
+      if (!content.candidates.every(({ title }) => !!title.trim()))
+        return '타이틀이 없는 후보가 존재해요';
+      createPostDto.content = JSON.stringify(content);
+    }
+    if (createPostDto.type === 'contest') {
+      const content: ContestContentDto = createPostDto.content as any; // todo: 타입.. 하..
+      if (!content.left || !content.right) return '후보가 없네요.';
+      if (
+        ![content.left.title, content.right.title].every(
+          (title) => !!title.trim(),
+        )
+      )
+        return '타이틀이 없는 후보가 존재해요';
+      createPostDto.content = JSON.stringify(content);
+    }
 
     const info = createPostDto.info as { [key: string]: any }; // todo: 타입.. 하..
     if (!Object.keys(info).every((key) => typeof info[key] !== 'undefined'))
       return '메타데이터 하나가 누락되었어요.';
     createPostDto.info = JSON.stringify(info);
 
+    console.log(createPostDto);
+
     const newPost = await this.databaseService.post.create({
       data: createPostDto,
     });
+
     return newPost.postId;
   }
 
-  async findAll(query: PostFindQuery, cursor: number) {
+  async findAllPosts(query: PostFindQuery, cursor: number) {
     const pageSize = 12;
 
     const posts = await this.databaseService.post.findMany({
