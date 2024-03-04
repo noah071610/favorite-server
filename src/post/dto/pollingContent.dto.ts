@@ -7,7 +7,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 
-class CandidateDto {
+export class PollingCandidateDto {
   @IsString()
   listId: string;
 
@@ -38,6 +38,6 @@ export class PollingContentDto {
 
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => CandidateDto)
-  candidates: CandidateDto[];
+  @Type(() => PollingCandidateDto)
+  candidates: PollingCandidateDto[];
 }

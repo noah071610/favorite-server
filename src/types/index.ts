@@ -1,1 +1,1 @@
-export type PostFindQuery = 'all' | 'popular' | 'like' | 'participate';
+export type PostFindQuery = 'all' | 'tournament' | 'polling' | 'contest';

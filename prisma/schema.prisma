@@ -14,10 +14,11 @@ datasource db {
 model User {
   userId  Int  @id @default(autoincrement())
   email String @unique
-  password String
-  // token String
+  password String?
+  provider String
   userName  String
-  userImage  String
+  userImage  String?
+
   posts Post[]
   comments Comment[]
   liked LikePost[]
@@ -28,12 +29,13 @@ model Post {
   id Int @default(autoincrement())
   postId String @id
   type String
-  format String
+  format String  @default("default")
   thumbnail String
   title String 
   description String
+  popular Int @default(0)
+  count Int @default(0)
   
-  info Json
   content Json
 
   userId Int
@@ -42,15 +44,17 @@ model Post {
   comments Comment[]
 
   createdAt DateTime @default(now())
+  lastPlayedAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([title], name: "title_fulltext_idx")
+  @@index([description], name: "description_fulltext_idx")
 }
 
 
 model Comment {
   commentId  Int  @id  @default(autoincrement())
   text String
-  like Int
 
   postId String
   post Post @relation(fields: [postId], references: [postId])

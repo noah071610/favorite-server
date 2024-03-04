@@ -1,7 +1,7 @@
 import { Type } from 'class-transformer';
 import { IsArray, IsNumber, IsString, ValidateNested } from 'class-validator';
 
-class CandidateDto {
+export class TournamentCandidateDto {
   @IsString()
   listId: string;
 
@@ -27,6 +27,6 @@ class CandidateDto {
 export class TournamentContentDto {
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => CandidateDto)
-  candidates: CandidateDto[];
+  @Type(() => TournamentCandidateDto)
+  candidates: TournamentCandidateDto[];
 }

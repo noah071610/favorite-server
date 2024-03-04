@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import * as bcrypt from 'bcrypt';
 import { nanoid } from 'nanoid';
 
 const prisma = new PrismaClient();
@@ -13,7 +14,7 @@ const candidates = [
     description: `가족은 아버지(탄쥬로), 어머니(키에), 남동생 셋(타케오, 시게루, 로쿠타), 여동생 둘(네즈코,
           하나코)이 있다. 이들은 먼저 세상을 떠난 아버지와 네즈코를 제외하고는 모두 키부츠지 무잔의 습격으로
           사망한다. 이후 탄지로는 도깨비가 되어버린 네즈코를 인간으로 되돌리기 위해 귀살대에 입단하게 된다.`,
-    count: 8,
+    pick: 8,
   },
   {
     number: 2,
@@ -22,7 +23,7 @@ const candidates = [
       'https://i.namu.wiki/i/7GNlLmMO79bx0nouEdyv8kmpD2GKR3CiUo0UQCV9BjQigagw7Rohhy7sj8AMjfIEzQROn6l2J7QsJ3vta0aM_Q.webp',
     title: '렌고쿠 쿄주로',
     description: `귀살대 9명의 주 중 하나이며 이명은 염주(炎柱). 전집중 기본 5대 계파 중 하나인 화염의 호흡을 사용한다. 이름 한자를 풀이하면 달굴 연(煉), 옥 옥(獄), 살구 행(杏), 목숨 수(寿), 사내 랑(郞). 그의 전반적인 성격이 잘 표현된 이름 자라고 볼 수 있다.`,
-    count: 12,
+    pick: 12,
   },
   {
     number: 3,
@@ -31,7 +32,7 @@ const candidates = [
       'https://i.namu.wiki/i/AHbK9_4JobeNC3DXXffmG3oPChsPVdPTii7JnhJVElIWtz8pQqxlBOY5e9_LI10s7CV0OJOptLEEG15ProZaCg.webp',
     title: '코쵸우 시노부',
     description: `약학에 정통해서 주들 중에서 유일하게 독을 사용하여 도깨비를 죽인다. 귀살대 내에서 의료장교 역할을 하고 있으며 자신의 거처인 '나비저택'을 병동으로 사용하고 있다. 이 저택에는 각각 귀살대원은 아니지만 키요, 스미, 나호라는 아이들이 저택 사용인 겸 간호사로 일하고 있다. 귀살대 대원 중에서는 칸자키 아오이와 자신의 츠구코인 츠유리 카나오가 직속 부하로서 일하고 있다.`,
-    count: 2,
+    pick: 2,
   },
   {
     number: 4,
@@ -40,7 +41,7 @@ const candidates = [
       'https://mblogthumb-phinf.pstatic.net/MjAyMDEyMDVfOTcg/MDAxNjA3MTY4MzkyMzA0.PpLENY3SQkm4SHYiH2pF8-nqda4IJcYjSxBCp5QHJ04g.eUvGPczp6Elcoi9dsW1j9VH6Bb4kURCsffF0fiob7pcg.JPEG.ty177/610e645b9cc11ff14a09331da06b0167.jpg?type=w800',
     title: '젠이츠',
     description: `최종 선별에서 살아남은 5인 중 하나로[9] 이때부터 줄곧 자신은 죽을 거라며 부정적인 말을 습관처럼 되뇌는 것이 특징이다. 까마귀를 무서워해 대신 참새를 지급받거나[10], 탄지로와 겐야의 사소한 신경전에도 겁먹는 등 소심하고 유약한 성격의 소유자임이 부각된다.`,
-    count: 22,
+    pick: 22,
   },
   {
     number: 5,
@@ -49,7 +50,7 @@ const candidates = [
       'https://blog.kakaocdn.net/dn/WGp8A/btqD1NJN902/lkK4e34JIBVG5VsrczH3h1/img.jpg',
     title: '츠유리 카나오',
     description: `약학에 정통해서 주들 중에서 유일하게 독을 사용하여 도깨비를 죽인다. 귀살대 내에서 의료장교 역할을 하고 있으며 자신의 거처인 '나비저택'을 병동으로 사용하고 있다. 이 저택에는 각각 귀살대원은 아니지만 키요, 스미, 나호라는 아이들이 저택 사용인 겸 간호사로 일하고 있다. 귀살대 대원 중에서는 칸자키 아오이와 자신의 츠구코인 츠유리 카나오가 직속 부하로서 일하고 있다.`,
-    count: 9,
+    pick: 9,
   },
   {
     number: 6,
@@ -58,7 +59,7 @@ const candidates = [
       'https://blog.kakaocdn.net/dn/WGp8A/btqD1NJN902/lkK4e34JIBVG5VsrczH3h1/img.jpg',
     title: '츠유리 카나오',
     description: `약학에 정통해서 주들 중에서 유일하게 독을 사용하여 도깨비를 죽인다. 귀살대 내에서 의료장교 역할을 하고 있으며 자신의 거처인 '나비저택'을 병동으로 사용하고 있다. 이 저택에는 각각 귀살대원은 아니지만 키요, 스미, 나호라는 아이들이 저택 사용인 겸 간호사로 일하고 있다. 귀살대 대원 중에서는 칸자키 아오이와 자신의 츠구코인 츠유리 카나오가 직속 부하로서 일하고 있다.`,
-    count: 9,
+    pick: 9,
   },
   {
     number: 7,
@@ -67,7 +68,7 @@ const candidates = [
       'https://blog.kakaocdn.net/dn/WGp8A/btqD1NJN902/lkK4e34JIBVG5VsrczH3h1/img.jpg',
     title: '츠유리 카나오',
     description: `약학에 정통해서 주들 중에서 유일하게 독을 사용하여 도깨비를 죽인다. 귀살대 내에서 의료장교 역할을 하고 있으며 자신의 거처인 '나비저택'을 병동으로 사용하고 있다. 이 저택에는 각각 귀살대원은 아니지만 키요, 스미, 나호라는 아이들이 저택 사용인 겸 간호사로 일하고 있다. 귀살대 대원 중에서는 칸자키 아오이와 자신의 츠구코인 츠유리 카나오가 직속 부하로서 일하고 있다.`,
-    count: 9,
+    pick: 9,
   },
   {
     number: 8,
@@ -76,7 +77,7 @@ const candidates = [
       'https://blog.kakaocdn.net/dn/WGp8A/btqD1NJN902/lkK4e34JIBVG5VsrczH3h1/img.jpg',
     title: '츠유리 카나오',
     description: `약학에 정통해서 주들 중에서 유일하게 독을 사용하여 도깨비를 죽인다. 귀살대 내에서 의료장교 역할을 하고 있으며 자신의 거처인 '나비저택'을 병동으로 사용하고 있다. 이 저택에는 각각 귀살대원은 아니지만 키요, 스미, 나호라는 아이들이 저택 사용인 겸 간호사로 일하고 있다. 귀살대 대원 중에서는 칸자키 아오이와 자신의 츠구코인 츠유리 카나오가 직속 부하로서 일하고 있다.`,
-    count: 9,
+    pick: 9,
   },
 ];
 
@@ -110,57 +111,45 @@ const generateRandomDescription = (min: number, max: number) => {
   return randomDescription;
 };
 
-let userId = 1;
-let commentId = 1;
-
 const postIdArr = Array.from({ length: 50 }, () => nanoid(10));
 
 async function main() {
   await prisma.user.createMany({
     data: [
       {
-        userId: userId++,
         email: 'noahh0310@gmail.com',
         userImage: 'https://avatars.githubusercontent.com/u/74864925?v=4',
-        userName: '노아쨩',
-        password: '123123123',
+        userName: '익명',
+        provider: 'local',
+        password: await bcrypt.hash('123123123', 10),
       },
       {
-        userId: userId++,
-        email: 'noahh0310@naver.com',
+        email: 'noah071610@gmail.com',
         userImage: 'https://avatars.githubusercontent.com/u/74864925?v=4',
-        userName: '네이버노아',
-        password: '123123123',
+        userName: 'Noah',
+        provider: 'local',
+        password: await bcrypt.hash('123123123', 10),
       },
     ],
   });
 
   await prisma.post.createMany({
     data: Array.from({ length: 3 }, (_, index) => {
-      const participatesNum = randomNum(0, 100);
       return {
-        id: index + 1,
         postId: postIdArr[index],
-        userId: 1,
+        userId: 2,
         content: JSON.stringify({
           candidates,
           layout: ['image', 'text', 'imageText'][index % 3],
           chartDescription: '차트에 대해 설명',
         }),
-        info: JSON.stringify({
-          like: randomNum(0, 100),
-          shareCount: randomNum(0, 100),
-          participateImages:
-            participatesNum === 0
-              ? []
-              : Array.from(
-                  { length: participatesNum >= 10 ? 10 : participatesNum },
-                  () => `https://picsum.photos/id/${randomNum(0, 100)}/100/100`,
-                ),
-          participateCount: participatesNum,
-        }),
+        popular: randomNum(0, 10),
+        count: randomNum(10, 10000),
         format: 'default',
-        title: `Card ${index + 1}`,
+        title:
+          index === 2
+            ? '짧은 타타 이 틀 입니다'
+            : generateRandomDescription(15, 50),
         description: ['', generateRandomDescription(8, 40)][
           Math.floor(Math.random() * 2)
         ],
@@ -172,44 +161,36 @@ async function main() {
 
   await prisma.post.createMany({
     data: Array.from({ length: 3 }, (_, index) => {
-      const participatesNum = randomNum(0, 100);
       return {
-        id: index + 4,
         postId: postIdArr[index + 3],
-        userId: 1,
+        userId: 2,
         content: JSON.stringify({
-          left: {
-            listId: nanoid(10),
-            imageSrc:
-              'https://i.namu.wiki/i/AHbK9_4JobeNC3DXXffmG3oPChsPVdPTii7JnhJVElIWtz8pQqxlBOY5e9_LI10s7CV0OJOptLEEG15ProZaCg.webp',
-            title: '코쵸우 시노부',
-            count: randomNum(250, 600),
-          },
-          right: {
-            listId: nanoid(10),
-            imageSrc:
-              'https://i.namu.wiki/i/AHbK9_4JobeNC3DXXffmG3oPChsPVdPTii7JnhJVElIWtz8pQqxlBOY5e9_LI10s7CV0OJOptLEEG15ProZaCg.webp',
-            title: '코쵸우 시노부',
-            count: randomNum(250, 600),
-          },
+          candidates: [
+            {
+              listId: 'left',
+              number: 1,
+              imageSrc:
+                'https://i.namu.wiki/i/AHbK9_4JobeNC3DXXffmG3oPChsPVdPTii7JnhJVElIWtz8pQqxlBOY5e9_LI10s7CV0OJOptLEEG15ProZaCg.webp',
+              title: '코쵸우 시노부',
+              pick: randomNum(250, 600),
+            },
+            {
+              listId: 'right',
+              imageSrc:
+                'https://i.namu.wiki/i/AHbK9_4JobeNC3DXXffmG3oPChsPVdPTii7JnhJVElIWtz8pQqxlBOY5e9_LI10s7CV0OJOptLEEG15ProZaCg.webp',
+              title: '코쵸우 시노부',
+              number: 2,
+              pick: randomNum(250, 600),
+            },
+          ],
         }),
-        info: JSON.stringify({
-          like: randomNum(0, 100),
-          shareCount: randomNum(0, 100),
-          participateImages:
-            participatesNum === 0
-              ? []
-              : Array.from(
-                  { length: participatesNum >= 10 ? 10 : participatesNum },
-                  () => `https://picsum.photos/id/${randomNum(0, 100)}/100/100`,
-                ),
-          participateCount: participatesNum,
-        }),
+        count: randomNum(10, 10000),
         format: 'default',
-        title: `Contest Card ${index + 1}`,
+        title: index === 0 ? '짧은 텍스트' : generateRandomDescription(15, 50),
         description: ['', generateRandomDescription(8, 40)][
           Math.floor(Math.random() * 2)
         ],
+        popular: randomNum(0, 10),
         type: 'contest',
         thumbnail: `https://picsum.photos/id/${index * 10}/1200/800`,
       };
@@ -218,11 +199,10 @@ async function main() {
 
   await prisma.post.createMany({
     data: Array.from({ length: 3 }, (_, index) => {
-      const participatesNum = randomNum(0, 100);
       return {
-        id: index + 7,
         postId: postIdArr[index + 7],
-        userId: 1,
+        userId: 2,
+        popular: randomNum(0, 10),
         content: JSON.stringify({
           candidates: [
             ...candidates,
@@ -242,20 +222,9 @@ async function main() {
             };
           }),
         }),
-        info: JSON.stringify({
-          like: randomNum(0, 100),
-          shareCount: randomNum(0, 100),
-          participateImages:
-            participatesNum === 0
-              ? []
-              : Array.from(
-                  { length: participatesNum >= 10 ? 10 : participatesNum },
-                  () => `https://picsum.photos/id/${randomNum(0, 100)}/100/100`,
-                ),
-          participateCount: participatesNum,
-        }),
+        count: randomNum(10, 10000),
         format: 'default',
-        title: `Tour Card ${index + 1}`,
+        title: generateRandomDescription(15, 50),
         description: ['', generateRandomDescription(8, 40)][
           Math.floor(Math.random() * 2)
         ],
@@ -265,20 +234,30 @@ async function main() {
     }),
   });
 
-  await prisma.comment.createMany({
-    data: Array.from({ length: 3 }, (_, i) => {
-      const arr = [];
-      for (let j = 0; j < 5; j++) {
-        arr.push({
-          commentId: commentId++,
-          text: generateRandomDescription(10, 15),
-          like: randomNum(0, 10),
-          userId: randomNum(1, 2),
-          postId: postIdArr[i],
-        });
-      }
-      return arr;
-    }).flat(),
+  await prisma.post.createMany({
+    data: Array.from({ length: 3 }, (_, index) => {
+      return {
+        postId: postIdArr[index + 11],
+        userId: 2,
+        content: JSON.stringify({
+          candidates,
+          layout: ['image', 'text', 'imageText'][index % 3],
+          chartDescription: '차트에 대해 설명',
+        }),
+        popular: randomNum(0, 10),
+        count: randomNum(10, 10000),
+        format: 'template',
+        title:
+          index === 2
+            ? '짧은 타타 이 틀 입니다'
+            : generateRandomDescription(15, 50),
+        description: ['', generateRandomDescription(8, 40)][
+          Math.floor(Math.random() * 2)
+        ],
+        type: 'polling',
+        thumbnail: `https://picsum.photos/id/${index * 10}/1200/800`,
+      };
+    }),
   });
 
   await prisma.$disconnect();

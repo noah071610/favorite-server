@@ -1,6 +1,8 @@
 import { NestFactory } from '@nestjs/core';
 import * as cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const session = require('express-session');
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -15,6 +17,14 @@ async function bootstrap() {
     // rawBody: true,
   });
   app.use(cookieParser());
+  app.use(
+    session({
+      secret: process.env.SESSION_SECRET,
+      resave: false,
+      saveUninitialized: true,
+    }),
+  );
+
   await app.listen(5555);
 }
 bootstrap();

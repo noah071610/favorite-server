@@ -1,57 +1,51 @@
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { Cache } from 'cache-manager';
 import { prismaExclude } from 'src/config/database/prismaExclude';
 import { DatabaseService } from 'src/database/database.service';
 import { PostFindQuery } from 'src/types';
-import { ContestContentDto } from './dto/contestContent.dto';
-import { PollingContentDto } from './dto/pollingContent.dto';
-import { PostInfoDto } from './dto/postInfo.dto';
-import { TournamentContentDto } from './dto/tournamentContent.dto';
+import { PostDto } from './dto/post.dto';
+
+const queries = ['all', 'tournament', 'contest', 'polling'];
+
+const getPostsSelect = {
+  ...prismaExclude('Post', ['content']),
+};
 
 @Injectable()
 export class PostService {
-  constructor(
-    private readonly databaseService: DatabaseService,
-    @Inject(CACHE_MANAGER) private cacheService: Cache,
-  ) {}
+  constructor(private readonly databaseService: DatabaseService) {}
 
-  async createPost(createPostDto: Prisma.PostCreateInput) {
+  async createPost(createPostDto: PostDto) {
+    const candidates = createPostDto.content.candidates;
+
+    if (!createPostDto) throw new BadRequestException('unknown');
+    if (!createPostDto.type) throw new BadRequestException('unknown');
     if (createPostDto.title.trim().length < 3)
-      return '타이틀은 공백을 제외하고 3글자 이상으로 작성해주세요!';
-    if (!createPostDto.content) return '후보가 없네요.';
-    if (!createPostDto.type) return '타입이 없네요.';
+      throw new BadRequestException('postTitle');
 
+    if (candidates.length < 2) throw new BadRequestException('candidateLength');
+    if (!candidates.every(({ title }) => !!title.trim()))
+      throw new BadRequestException('noCandidateTitle');
+
+    if (candidates.length < 2) throw new BadRequestException('candidateLength');
+    if (!candidates.every(({ title }) => !!title.trim()))
+      throw new BadRequestException('noCandidateTitle');
     if (
-      createPostDto.type === 'polling' ||
-      createPostDto.type === 'tournament'
+      createPostDto.type === 'contest' ||
+      createPostDto.type === 'tournament' ||
+      (createPostDto.type === 'polling' &&
+        (createPostDto.content.layout === 'image' ||
+          createPostDto.content.layout === 'textImage'))
     ) {
-      const content: PollingContentDto | TournamentContentDto =
-        createPostDto.content as any;
-      if (!content.candidates.length) return '후보가 없네요.';
-      if (!content.candidates.every(({ title }) => !!title.trim()))
-        return '타이틀이 없는 후보가 존재해요';
-      createPostDto.content = JSON.stringify(content);
-    }
-    if (createPostDto.type === 'contest') {
-      const content: ContestContentDto = createPostDto.content as any; // todo: 타입.. 하..
-      if (!content.left || !content.right) return '후보가 없네요.';
-      if (
-        ![content.left.title, content.right.title].every(
-          (title) => !!title.trim(),
-        )
-      )
-        return '타이틀이 없는 후보가 존재해요';
-      createPostDto.content = JSON.stringify(content);
+      if (!candidates.every(({ imageSrc }) => !!imageSrc.trim()))
+        throw new BadRequestException('noCandidateImage');
     }
 
-    const info = createPostDto.info as { [key: string]: any }; // todo: 타입.. 하..
-    if (!Object.keys(info).every((key) => typeof info[key] !== 'undefined'))
-      return '메타데이터 하나가 누락되었어요.';
-    createPostDto.info = JSON.stringify(info);
-
-    console.log(createPostDto);
+    createPostDto.content = JSON.stringify(createPostDto.content);
 
     const newPost = await this.databaseService.post.create({
       data: createPostDto,
@@ -60,27 +54,40 @@ export class PostService {
     return newPost.postId;
   }
 
-  async findAllPosts(query: PostFindQuery, cursor: number) {
+  async findAllPosts(
+    query: PostFindQuery = 'all',
+    sort: 'createdAt' | 'lastPlayedAt' = 'createdAt',
+    cursor: number,
+  ) {
+    if (!queries.some((v) => v === query)) {
+      query = 'all';
+    }
+    if (!['createdAt', 'lastPlayedAt'].some((v) => v === sort)) {
+      sort = 'createdAt';
+    }
+
     const pageSize = 12;
 
     const posts = await this.databaseService.post.findMany({
+      where: {
+        AND: [
+          {
+            format: 'default',
+          },
+          query === 'all'
+            ? undefined
+            : {
+                type: query,
+              },
+        ],
+      },
       skip: cursor * pageSize,
       take: pageSize,
-      orderBy: { id: 'desc' },
-      select: {
-        user: {
-          select: prismaExclude('User', ['createdAt', 'email']),
-        },
-        ...prismaExclude('Post', ['content']),
-      },
+      orderBy: { [sort]: 'desc' },
+      select: getPostsSelect,
     });
 
-    await this.cacheService.set('test', posts);
-
-    return posts.map((post) => ({
-      ...post,
-      info: JSON.parse(post.info as string),
-    }));
+    return posts;
   }
 
   async findOne(postId: string) {
@@ -88,16 +95,27 @@ export class PostService {
       where: {
         postId,
       },
-      select: {
-        ...prismaExclude('Post', ['info']),
+      include: {
         user: {
-          select: prismaExclude('User', ['createdAt', 'email']),
+          select: {
+            userName: true,
+            userId: true,
+            userImage: true,
+          },
         },
         comments: {
-          include: {
+          select: {
+            commentId: true,
+            text: true,
             user: {
-              select: prismaExclude('User', ['createdAt', 'email']),
+              select: {
+                userName: true,
+                userId: true,
+              },
             },
+          },
+          orderBy: {
+            createdAt: 'desc',
           },
         },
       },
@@ -110,25 +128,13 @@ export class PostService {
     return { ...post, content };
   }
 
-  async like(userId: number, postId: string) {
-    const post = await this.databaseService.post.findUnique({
-      where: {
-        postId,
-      },
+  async createComment(data: Prisma.CommentCreateInput) {
+    await this.databaseService.comment.create({
+      data,
     });
+  }
 
-    const info: PostInfoDto = JSON.parse(post.info as string);
-    info.like++;
-    info.participateCount++;
-    if (info.participateImages.length < 10) {
-      const user = await this.databaseService.user.findUnique({
-        where: {
-          userId,
-        },
-      });
-      info.participateImages = [...info.participateImages, user.userImage];
-    }
-
+  async like(userId: number, postId: string) {
     await this.databaseService.user.update({
       where: {
         userId,
@@ -141,20 +147,81 @@ export class PostService {
         },
       },
     });
+  }
 
+  async findSearchPosts(searchQuery: string) {
+    const posts = await this.databaseService.post.findMany({
+      where: {
+        OR: [
+          {
+            title: {
+              contains: searchQuery,
+            },
+          },
+          {
+            description: {
+              contains: searchQuery,
+            },
+          },
+        ],
+      },
+    });
+
+    return posts;
+  }
+
+  async findPopularPosts() {
+    const posts = await this.databaseService.post.findMany({
+      where: {
+        popular: {
+          gt: 0,
+        },
+      },
+      take: 9,
+      select: getPostsSelect,
+    });
+
+    return posts;
+  }
+
+  async findTemplatePosts() {
+    const posts = await this.databaseService.post.findMany({
+      where: {
+        format: 'template',
+      },
+      orderBy: {
+        popular: 'desc',
+      },
+      take: 15, // todo:
+      include: {
+        user: {
+          select: prismaExclude('User', [
+            'createdAt',
+            'email',
+            'password',
+            'provider',
+          ]),
+        },
+      },
+    });
+
+    return posts.map((v) => ({
+      ...v,
+      content: JSON.parse((v.content as string) ?? '{}'),
+    }));
+  }
+
+  async finish(postId: string, content: any) {
     await this.databaseService.post.update({
       where: {
         postId,
       },
       data: {
-        info: JSON.stringify(info),
+        count: {
+          increment: 1, // 증가할 값
+        },
+        content: JSON.stringify(content),
       },
     });
-
-    return { msg: 'ok' };
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} post`;
   }
 }
