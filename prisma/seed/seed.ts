@@ -140,8 +140,8 @@ async function main() {
         userId: 2,
         content: JSON.stringify({
           candidates,
-          layout: ['image', 'text', 'imageText'][index % 3],
-          chartDescription: '차트에 대해 설명',
+          layout: ['image', 'text', 'textImage'][index % 3],
+          resultDescription: '차트에 대해 설명',
         }),
         popular: randomNum(0, 10),
         count: randomNum(10, 10000),
@@ -241,8 +241,8 @@ async function main() {
         userId: 2,
         content: JSON.stringify({
           candidates,
-          layout: ['image', 'text', 'imageText'][index % 3],
-          chartDescription: '차트에 대해 설명',
+          layout: ['image', 'text', 'textImage'][index % 3],
+          resultDescription: '차트에 대해 설명',
         }),
         popular: randomNum(0, 10),
         count: randomNum(10, 10000),

@@ -12,7 +12,22 @@ import { PostDto } from './dto/post.dto';
 const queries = ['all', 'tournament', 'contest', 'polling'];
 
 const getPostsSelect = {
-  ...prismaExclude('Post', ['content']),
+  ...prismaExclude('Post', ['content', 'updatedAt', 'userId', 'id']),
+};
+const getUser = {
+  userName: true,
+  userId: true,
+  userImage: true,
+};
+const getComments = {
+  createdAt: true,
+  text: true,
+  user: {
+    select: {
+      userName: true,
+      userId: true,
+    },
+  },
 };
 
 @Injectable()
@@ -49,9 +64,10 @@ export class PostService {
 
     const newPost = await this.databaseService.post.create({
       data: createPostDto,
+      select: getPostsSelect,
     });
 
-    return newPost.postId;
+    return newPost;
   }
 
   async findAllPosts(
@@ -75,7 +91,7 @@ export class PostService {
             format: 'default',
           },
           query === 'all'
-            ? undefined
+            ? {}
             : {
                 type: query,
               },
@@ -97,23 +113,10 @@ export class PostService {
       },
       include: {
         user: {
-          select: {
-            userName: true,
-            userId: true,
-            userImage: true,
-          },
+          select: getUser,
         },
         comments: {
-          select: {
-            commentId: true,
-            text: true,
-            user: {
-              select: {
-                userName: true,
-                userId: true,
-              },
-            },
-          },
+          select: getComments,
           orderBy: {
             createdAt: 'desc',
           },
@@ -193,15 +196,8 @@ export class PostService {
         popular: 'desc',
       },
       take: 15, // todo:
-      include: {
-        user: {
-          select: prismaExclude('User', [
-            'createdAt',
-            'email',
-            'password',
-            'provider',
-          ]),
-        },
+      select: {
+        ...prismaExclude('Post', ['updatedAt', 'userId', 'id']),
       },
     });
 
@@ -211,7 +207,7 @@ export class PostService {
     }));
   }
 
-  async finish(postId: string, content: any) {
+  async finish(postId: string, finishedPost: any) {
     await this.databaseService.post.update({
       where: {
         postId,
@@ -220,8 +216,9 @@ export class PostService {
         count: {
           increment: 1, // 증가할 값
         },
-        content: JSON.stringify(content),
+        content: JSON.stringify(finishedPost.content),
       },
+      select: getPostsSelect,
     });
   }
 }

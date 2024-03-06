@@ -37,6 +37,11 @@ export class PostController {
     return this.postService.findPopularPosts();
   }
 
+  @Get('template')
+  findTemplatePosts() {
+    return this.postService.findTemplatePosts();
+  }
+
   @Get('search')
   findSearchPosts(@Query('searchQuery') searchQuery: string) {
     return this.postService.findSearchPosts(searchQuery);
@@ -67,7 +72,7 @@ export class PostController {
   }
 
   @Put('finish')
-  finish(@Query('postId') postId: string, @Body() content: any) {
-    return this.postService.finish(postId, content);
+  finish(@Query('postId') postId: string, @Body() finishedPost: any) {
+    return this.postService.finish(postId, finishedPost);
   }
 }
