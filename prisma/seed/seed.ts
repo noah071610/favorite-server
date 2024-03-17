@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { nanoid } from 'nanoid';
+import getRandomColor from '../../src/util/getRandomColor';
 
 const prisma = new PrismaClient();
 
@@ -122,6 +123,7 @@ async function main() {
         userName: '익명',
         provider: 'local',
         password: await bcrypt.hash('123123123', 10),
+        color: 'rgba(255, 176, 176, 0.7)',
       },
       {
         email: 'noah071610@gmail.com',
@@ -129,136 +131,137 @@ async function main() {
         userName: 'Noah',
         provider: 'local',
         password: await bcrypt.hash('123123123', 10),
+        color: getRandomColor(),
       },
     ],
   });
 
-  await prisma.post.createMany({
-    data: Array.from({ length: 3 }, (_, index) => {
-      return {
-        postId: postIdArr[index],
-        userId: 2,
-        content: JSON.stringify({
-          candidates,
-          layout: ['image', 'text', 'textImage'][index % 3],
-          resultDescription: '차트에 대해 설명',
-        }),
-        popular: randomNum(0, 10),
-        count: randomNum(10, 10000),
-        format: 'default',
-        title:
-          index === 2
-            ? '짧은 타타 이 틀 입니다'
-            : generateRandomDescription(15, 50),
-        description: ['', generateRandomDescription(8, 40)][
-          Math.floor(Math.random() * 2)
-        ],
-        type: 'polling',
-        thumbnail: `https://picsum.photos/id/${index * 10}/1200/800`,
-      };
-    }),
-  });
+  // await prisma.post.createMany({
+  //   data: Array.from({ length: 3 }, (_, index) => {
+  //     return {
+  //       postId: postIdArr[index],
+  //       userId: 2,
+  //       content: JSON.stringify({
+  //         candidates,
+  //         layout: ['image', 'text', 'textImage'][index % 3],
+  //         resultDescription: '차트에 대해 설명',
+  //       }),
+  //       popular: randomNum(0, 10),
+  //       count: randomNum(10, 10000),
+  //       format: 'default',
+  //       title:
+  //         index === 2
+  //           ? '짧은 타타 이 틀 입니다'
+  //           : generateRandomDescription(15, 50),
+  //       description: ['', generateRandomDescription(8, 40)][
+  //         Math.floor(Math.random() * 2)
+  //       ],
+  //       type: 'polling',
+  //       thumbnail: `https://picsum.photos/id/${index * 10}/1200/800`,
+  //     };
+  //   }),
+  // });
 
-  await prisma.post.createMany({
-    data: Array.from({ length: 3 }, (_, index) => {
-      return {
-        postId: postIdArr[index + 3],
-        userId: 2,
-        content: JSON.stringify({
-          candidates: [
-            {
-              listId: 'left',
-              number: 1,
-              imageSrc:
-                'https://i.namu.wiki/i/AHbK9_4JobeNC3DXXffmG3oPChsPVdPTii7JnhJVElIWtz8pQqxlBOY5e9_LI10s7CV0OJOptLEEG15ProZaCg.webp',
-              title: '코쵸우 시노부',
-              pick: randomNum(250, 600),
-            },
-            {
-              listId: 'right',
-              imageSrc:
-                'https://i.namu.wiki/i/AHbK9_4JobeNC3DXXffmG3oPChsPVdPTii7JnhJVElIWtz8pQqxlBOY5e9_LI10s7CV0OJOptLEEG15ProZaCg.webp',
-              title: '코쵸우 시노부',
-              number: 2,
-              pick: randomNum(250, 600),
-            },
-          ],
-        }),
-        count: randomNum(10, 10000),
-        format: 'default',
-        title: index === 0 ? '짧은 텍스트' : generateRandomDescription(15, 50),
-        description: ['', generateRandomDescription(8, 40)][
-          Math.floor(Math.random() * 2)
-        ],
-        popular: randomNum(0, 10),
-        type: 'contest',
-        thumbnail: `https://picsum.photos/id/${index * 10}/1200/800`,
-      };
-    }),
-  });
+  // await prisma.post.createMany({
+  //   data: Array.from({ length: 3 }, (_, index) => {
+  //     return {
+  //       postId: postIdArr[index + 3],
+  //       userId: 2,
+  //       content: JSON.stringify({
+  //         candidates: [
+  //           {
+  //             listId: 'left',
+  //             number: 1,
+  //             imageSrc:
+  //               'https://i.namu.wiki/i/AHbK9_4JobeNC3DXXffmG3oPChsPVdPTii7JnhJVElIWtz8pQqxlBOY5e9_LI10s7CV0OJOptLEEG15ProZaCg.webp',
+  //             title: '코쵸우 시노부',
+  //             pick: randomNum(250, 600),
+  //           },
+  //           {
+  //             listId: 'right',
+  //             imageSrc:
+  //               'https://i.namu.wiki/i/AHbK9_4JobeNC3DXXffmG3oPChsPVdPTii7JnhJVElIWtz8pQqxlBOY5e9_LI10s7CV0OJOptLEEG15ProZaCg.webp',
+  //             title: '코쵸우 시노부',
+  //             number: 2,
+  //             pick: randomNum(250, 600),
+  //           },
+  //         ],
+  //       }),
+  //       count: randomNum(10, 10000),
+  //       format: 'default',
+  //       title: index === 0 ? '짧은 텍스트' : generateRandomDescription(15, 50),
+  //       description: ['', generateRandomDescription(8, 40)][
+  //         Math.floor(Math.random() * 2)
+  //       ],
+  //       popular: randomNum(0, 10),
+  //       type: 'contest',
+  //       thumbnail: `https://picsum.photos/id/${index * 10}/1200/800`,
+  //     };
+  //   }),
+  // });
 
-  await prisma.post.createMany({
-    data: Array.from({ length: 3 }, (_, index) => {
-      return {
-        postId: postIdArr[index + 7],
-        userId: 2,
-        popular: randomNum(0, 10),
-        content: JSON.stringify({
-          candidates: [
-            ...candidates,
-            ...candidates,
-            ...candidates,
-            ...candidates,
-          ].map(({ imageSrc }, t) => {
-            const win = randomNum(1, 100);
-            return {
-              listId: nanoid(10),
-              title: `${t + index + 1}번 후보`,
-              imageSrc,
-              win: win,
-              lose: 100 - win,
-              pick: randomNum(0, 100),
-              number: t + 1,
-            };
-          }),
-        }),
-        count: randomNum(10, 10000),
-        format: 'default',
-        title: generateRandomDescription(15, 50),
-        description: ['', generateRandomDescription(8, 40)][
-          Math.floor(Math.random() * 2)
-        ],
-        type: 'tournament',
-        thumbnail: `https://picsum.photos/id/${index * 10}/1200/800`,
-      };
-    }),
-  });
+  // await prisma.post.createMany({
+  //   data: Array.from({ length: 3 }, (_, index) => {
+  //     return {
+  //       postId: postIdArr[index + 7],
+  //       userId: 2,
+  //       popular: randomNum(0, 10),
+  //       content: JSON.stringify({
+  //         candidates: [
+  //           ...candidates,
+  //           ...candidates,
+  //           ...candidates,
+  //           ...candidates,
+  //         ].map(({ imageSrc }, t) => {
+  //           const win = randomNum(1, 100);
+  //           return {
+  //             listId: nanoid(10),
+  //             title: `${t + index + 1}번 후보`,
+  //             imageSrc,
+  //             win: win,
+  //             lose: 100 - win,
+  //             pick: randomNum(0, 100),
+  //             number: t + 1,
+  //           };
+  //         }),
+  //       }),
+  //       count: randomNum(10, 10000),
+  //       format: 'default',
+  //       title: generateRandomDescription(15, 50),
+  //       description: ['', generateRandomDescription(8, 40)][
+  //         Math.floor(Math.random() * 2)
+  //       ],
+  //       type: 'tournament',
+  //       thumbnail: `https://picsum.photos/id/${index * 10}/1200/800`,
+  //     };
+  //   }),
+  // });
 
-  await prisma.post.createMany({
-    data: Array.from({ length: 3 }, (_, index) => {
-      return {
-        postId: postIdArr[index + 11],
-        userId: 2,
-        content: JSON.stringify({
-          candidates,
-          layout: ['image', 'text', 'textImage'][index % 3],
-          resultDescription: '차트에 대해 설명',
-        }),
-        popular: randomNum(0, 10),
-        count: randomNum(10, 10000),
-        format: 'template',
-        title:
-          index === 2
-            ? '짧은 타타 이 틀 입니다'
-            : generateRandomDescription(15, 50),
-        description: ['', generateRandomDescription(8, 40)][
-          Math.floor(Math.random() * 2)
-        ],
-        type: 'polling',
-        thumbnail: `https://picsum.photos/id/${index * 10}/1200/800`,
-      };
-    }),
-  });
+  // await prisma.post.createMany({
+  //   data: Array.from({ length: 3 }, (_, index) => {
+  //     return {
+  //       postId: postIdArr[index + 11],
+  //       userId: 2,
+  //       content: JSON.stringify({
+  //         candidates,
+  //         layout: ['image', 'text', 'textImage'][index % 3],
+  //         resultDescription: '차트에 대해 설명',
+  //       }),
+  //       popular: randomNum(0, 10),
+  //       count: randomNum(10, 10000),
+  //       format: 'template',
+  //       title:
+  //         index === 2
+  //           ? '짧은 타타 이 틀 입니다'
+  //           : generateRandomDescription(15, 50),
+  //       description: ['', generateRandomDescription(8, 40)][
+  //         Math.floor(Math.random() * 2)
+  //       ],
+  //       type: 'polling',
+  //       thumbnail: `https://picsum.photos/id/${index * 10}/1200/800`,
+  //     };
+  //   }),
+  // });
 
   await prisma.$disconnect();
 }

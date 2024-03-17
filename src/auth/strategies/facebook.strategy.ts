@@ -27,9 +27,8 @@ export class FacebookStrategy extends PassportStrategy(Strategy, 'facebook') {
     refreshToken: string,
     profile: any,
     done: any,
-    any: any,
+    // any: any,
   ): Promise<any> {
-    console.log({ accessToken, refreshToken, profile, done, any });
     const { displayName, provider } = profile;
     //todo: 이메일 인증 인증 필요.....!!!!!!
     const email = 'facebook2@gmail.com';

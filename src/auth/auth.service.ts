@@ -13,6 +13,7 @@ import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import { ConfigService } from '@nestjs/config';
 import { Prisma } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
+import getRandomColor from 'src/util/getRandomColor';
 import { Payload, PayloadForValidate } from './dto/payload.interface';
 
 @Injectable()
@@ -75,7 +76,7 @@ export class AuthService {
         : undefined;
 
       const createUser = await this.databaseService.user.create({
-        data: { ...userDTO, password },
+        data: { ...userDTO, password, color: getRandomColor() },
       });
       return {
         msg: 'ok',
