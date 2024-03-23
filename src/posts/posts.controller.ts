@@ -57,4 +57,9 @@ export class PostsController {
   getAllUserSaveCount(@Req() req) {
     return this.postsService.getAllUserSaveCount(req.user.userId);
   }
+
+  @Get('sitemap')
+  findAllSitemapPosts() {
+    return this.postsService.findAllSitemapPosts();
+  }
 }

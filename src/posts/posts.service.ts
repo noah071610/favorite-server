@@ -20,6 +20,21 @@ export class PostsService {
     private readonly cachedService: CachedService,
   ) {}
 
+  async findAllSitemapPosts() {
+    const posts = await this.databaseService.post.findMany({
+      where: {
+        format: 'default',
+      },
+      orderBy: { popular: 'desc' },
+      select: {
+        postId: true,
+        createdAt: true,
+      },
+    });
+
+    return posts;
+  }
+
   async findAllPosts(
     query: PostFindQuery = PostFindQuery.all,
     sort: 'createdAt' | 'lastPlayedAt' | 'popular' = 'createdAt',

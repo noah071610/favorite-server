@@ -51,7 +51,7 @@ export class CachedService {
               HttpStatus.INTERNAL_SERVER_ERROR,
             );
 
-          post.content = JSON.parse(post.content);
+          post.content = JSON.parse(post.content ?? '');
 
           return post;
         }),
@@ -59,14 +59,12 @@ export class CachedService {
         // memo: 만약 에러가 나면.. 일단은 보여줘야하기 때문에 걸러줌 그래서 allSettled
         return v.filter((v) => v.status === 'fulfilled');
       });
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const jsonArr = arr.map(({ status, ...rest }) => rest);
 
-      await this.cacheManager.set(
-        key,
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        JSON.stringify(arr.map(({ status, ...rest }) => rest)),
-      );
+      await this.cacheManager.set(key, JSON.stringify(jsonArr));
 
-      return arr;
+      return jsonArr;
     } else {
       return JSON.parse(postsJSON);
     }
