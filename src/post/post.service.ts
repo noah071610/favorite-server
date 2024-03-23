@@ -1,13 +1,11 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { nanoid } from 'nanoid';
 import { prismaExclude } from 'src/config/database/prismaExclude';
 import { DatabaseService } from 'src/database/database.service';
-import { ContentDto, PostDto } from './dto/post.dto';
+import { ErrorMessage } from 'src/error/messages';
+import { LangType, PostDto } from './dto/post.dto';
+import { ContentDto } from './dto/post.main';
+import { SaveUpdateDto } from './dto/save.dto';
 
 const getNewPostId = () => nanoid(12);
 
@@ -37,18 +35,34 @@ export class PostService {
   validatePost(createPostDto: PostDto) {
     const candidates = createPostDto.content.candidates;
 
-    if (!createPostDto) throw new BadRequestException('unknown');
-    if (!createPostDto.type) throw new BadRequestException('unknown');
+    if (!createPostDto)
+      throw new HttpException(ErrorMessage.unknown, HttpStatus.BAD_REQUEST);
+    if (!createPostDto.type)
+      throw new HttpException(ErrorMessage.unknown, HttpStatus.BAD_REQUEST);
     if (createPostDto.title.trim().length < 3)
-      throw new BadRequestException('postTitle');
+      throw new HttpException(ErrorMessage.postTitle, HttpStatus.BAD_REQUEST);
 
-    if (candidates.length < 2) throw new BadRequestException('candidateLength');
+    if (candidates.length < 2)
+      throw new HttpException(
+        ErrorMessage.candidateLength,
+        HttpStatus.BAD_REQUEST,
+      );
     if (!candidates.every(({ title }) => !!title.trim()))
-      throw new BadRequestException('noCandidateTitle');
+      throw new HttpException(
+        ErrorMessage.noCandidateTitle,
+        HttpStatus.BAD_REQUEST,
+      );
 
-    if (candidates.length < 2) throw new BadRequestException('candidateLength');
+    if (candidates.length < 2)
+      throw new HttpException(
+        ErrorMessage.candidateLength,
+        HttpStatus.BAD_REQUEST,
+      );
     if (!candidates.every(({ title }) => !!title.trim()))
-      throw new BadRequestException('noCandidateTitle');
+      throw new HttpException(
+        ErrorMessage.noCandidateTitle,
+        HttpStatus.BAD_REQUEST,
+      );
     if (
       createPostDto.type === 'contest' ||
       createPostDto.type === 'tournament' ||
@@ -57,7 +71,10 @@ export class PostService {
           createPostDto.content.layout === 'textImage'))
     ) {
       if (!candidates.every(({ imageSrc }) => !!imageSrc.trim()))
-        throw new BadRequestException('noCandidateImage');
+        throw new HttpException(
+          ErrorMessage.noCandidateImage,
+          HttpStatus.BAD_REQUEST,
+        );
     }
   }
 
@@ -79,9 +96,10 @@ export class PostService {
       },
     });
 
-    if (!post) throw new NotFoundException('포스트를 찾을 수 없어요');
+    if (!post)
+      throw new HttpException(ErrorMessage.noPost, HttpStatus.NOT_FOUND);
 
-    const content = JSON.parse(post.content as string);
+    const content = JSON.parse(post.content);
     return { ...post, content };
   }
 
@@ -124,7 +142,7 @@ export class PostService {
     });
   }
 
-  async initNewPost(userId: number) {
+  async initNewPost(userId: number, lang: LangType) {
     const newPostId = getNewPostId();
     await this.databaseService.save.create({
       data: {
@@ -135,6 +153,7 @@ export class PostService {
         description: '',
         format: 'editing',
         count: 0,
+        lang,
         user: {
           connect: {
             userId,
@@ -162,7 +181,7 @@ export class PostService {
 
   async copy(createPostDto: PostDto, userId: number) {
     const newPostId = getNewPostId();
-    const { title, description, thumbnail, type } = createPostDto;
+    const { title, description, thumbnail, type, lang } = createPostDto;
     await this.databaseService.save.create({
       data: {
         title,
@@ -172,6 +191,7 @@ export class PostService {
         postId: newPostId,
         format: 'editing',
         count: 0,
+        lang,
         user: {
           connect: {
             userId,
@@ -199,13 +219,13 @@ export class PostService {
       },
     });
     if (!existingSaveData)
-      throw new NotFoundException('포스트를 찾을 수 없어요');
+      throw new HttpException(ErrorMessage.noPost, HttpStatus.NOT_FOUND);
 
     existingSaveData.content = JSON.parse(existingSaveData.content as string);
     return existingSaveData;
   }
 
-  async save(data: PostDto, userId: number) {
+  async save(data: SaveUpdateDto, userId: number) {
     await this.databaseService.save.update({
       where: { userId, postId: data.postId }, // 업데이트 또는 생성할 사용자의 고유 식별자
       data: {
@@ -213,8 +233,6 @@ export class PostService {
         content: JSON.stringify(data.content),
       },
     });
-
-    return { msg: 'ok' };
   }
 
   async posting(createPostDto: PostDto, userId: number) {
@@ -272,14 +290,6 @@ export class PostService {
       create: data,
       update: data,
     });
-
-    return { msg: 'ok' };
-  }
-
-  async createComment(data: Prisma.CommentCreateInput) {
-    await this.databaseService.comment.create({
-      data,
-    });
   }
 
   async delete(postId: string, userId: number) {
@@ -304,7 +314,5 @@ export class PostService {
         },
       });
     }
-
-    return { msg: 'ok' };
   }
 }

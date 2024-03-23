@@ -1,55 +1,123 @@
-export type ContentLayoutType = 'text' | 'image' | 'textImage';
-export type PostFormatType =
-  | 'default'
-  | 'secret'
-  | 'preview'
-  | 'template'
-  | 'editing';
-export type PostingStatus = 'init' | 'edit' | 'rending';
-export type PostContentType = 'polling' | 'contest' | 'tournament';
-export type ThumbnailType = 'custom' | 'layout' | 'none';
-export interface ThumbnailSettingType {
-  imageSrc: string;
-  type: ThumbnailType;
-  layout: string[];
-  slice: number;
-  isPossibleLayout: boolean;
-}
-export type PostFindQuery = 'all' | PostContentType;
+import { Type } from 'class-transformer';
+import {
+  IsBoolean,
+  IsDate,
+  IsEnum,
+  IsInt,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
+import { UserSelectDto } from 'src/auth/dto/user.dto';
+import { ContentDto } from './post.main';
 
-export interface CandidateDto {
-  listId: string;
-  number: number;
-  title: string;
-  description: string;
+export enum PostType {
+  polling = 'polling',
+  contest = 'contest',
+  tournament = 'tournament',
+}
+
+export enum PostFindQuery {
+  all = 'all',
+  tournament = 'tournament',
+  polling = 'polling',
+  contest = 'contest',
+}
+
+export enum ContentLayoutType {
+  text = 'text',
+  image = 'image',
+  textImage = 'textImage',
+}
+
+export enum LangType {
+  ko = 'ko',
+  ja = 'ja',
+  en = 'en',
+  th = 'th',
+}
+
+export enum PostFormatType {
+  default = 'default',
+  secret = 'secret',
+  preview = 'preview',
+  template = 'template',
+  editing = 'editing',
+}
+
+export enum PostingStatus {
+  init = 'init',
+  edit = 'edit',
+  rendering = 'rending',
+}
+
+export enum ThumbnailType {
+  custom = 'custom',
+  layout = 'layout',
+  none = 'none',
+}
+
+export class ThumbnailSettingType {
+  @IsString()
   imageSrc: string;
-  win: number;
-  lose: number;
-  pick: number;
+
+  @IsEnum(ThumbnailType)
+  type: ThumbnailType;
+
+  @IsString({ each: true })
+  layout: string[];
+
+  @IsInt()
+  slice: number;
+
+  @IsBoolean()
+  isPossibleLayout: boolean;
 }
 
 export class PostDto {
+  @IsInt()
   id: number;
-  postId: string;
-  userId: number;
-  type: string;
-  format: string;
-  thumbnail: string;
-  title: string;
-  description: string;
-  count: number;
-  content: ContentDto;
-  createdAt: Date;
-  updatedAt: Date;
-  lastPlayedAt: Date;
-}
 
-export class ContentDto {
-  layout: ContentLayoutType;
-  resultDescription: string;
-  newPostStatus: PostingStatus;
-  candidates: CandidateDto[];
-  thumbnail: ThumbnailSettingType;
-  selectedCandidateIndex: number;
-  isEditOn: boolean;
+  @IsString()
+  postId: string;
+
+  @IsInt()
+  userId: number;
+
+  @IsString()
+  type: string;
+
+  @IsEnum(PostFormatType)
+  format: PostFormatType;
+
+  @IsString()
+  thumbnail: string;
+
+  @IsString()
+  title: string;
+
+  @IsString()
+  description: string;
+
+  @IsEnum(LangType)
+  lang: LangType;
+
+  @IsInt()
+  count: number;
+
+  @ValidateNested()
+  @Type(() => ContentDto)
+  content: ContentDto;
+
+  @ValidateNested()
+  @Type(() => UserSelectDto)
+  user: UserSelectDto;
+
+  @IsDate()
+  createdAt: Date;
+
+  @IsDate()
+  updatedAt: Date;
+
+  @IsDate()
+  lastPlayedAt: Date;
 }

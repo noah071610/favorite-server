@@ -112,19 +112,11 @@ const generateRandomDescription = (min: number, max: number) => {
   return randomDescription;
 };
 
-const postIdArr = Array.from({ length: 50 }, () => nanoid(10));
+const postIdArr = Array.from({ length: 500 }, () => nanoid(12));
 
 async function main() {
   await prisma.user.createMany({
     data: [
-      {
-        email: 'noahh0310@gmail.com',
-        userImage: 'https://avatars.githubusercontent.com/u/74864925?v=4',
-        userName: '익명',
-        provider: 'local',
-        password: await bcrypt.hash('123123123', 10),
-        color: 'rgba(255, 176, 176, 0.7)',
-      },
       {
         email: 'noah071610@gmail.com',
         userImage: 'https://avatars.githubusercontent.com/u/74864925?v=4',
@@ -136,31 +128,45 @@ async function main() {
     ],
   });
 
-  // await prisma.post.createMany({
-  //   data: Array.from({ length: 3 }, (_, index) => {
-  //     return {
-  //       postId: postIdArr[index],
-  //       userId: 2,
-  //       content: JSON.stringify({
-  //         candidates,
-  //         layout: ['image', 'text', 'textImage'][index % 3],
-  //         resultDescription: '차트에 대해 설명',
-  //       }),
-  //       popular: randomNum(0, 10),
-  //       count: randomNum(10, 10000),
-  //       format: 'default',
-  //       title:
-  //         index === 2
-  //           ? '짧은 타타 이 틀 입니다'
-  //           : generateRandomDescription(15, 50),
-  //       description: ['', generateRandomDescription(8, 40)][
-  //         Math.floor(Math.random() * 2)
-  //       ],
-  //       type: 'polling',
-  //       thumbnail: `https://picsum.photos/id/${index * 10}/1200/800`,
-  //     };
-  //   }),
-  // });
+  await prisma.save.createMany({
+    data: Array.from({ length: 500 }, (_, index) => {
+      return {
+        postId: postIdArr[index],
+        userId: 1,
+        content: JSON.stringify({}),
+        popular: randomNum(0, 100),
+        count: randomNum(10, 10000),
+        format: 'default',
+        lang: 'ko',
+        title: generateRandomDescription(15, 100),
+        description: ['', generateRandomDescription(8, 100)][
+          Math.floor(Math.random() * 2)
+        ],
+        type: 'polling',
+        thumbnail: `https://picsum.photos/id/${index * 10}/1200/800`,
+      };
+    }),
+  });
+
+  await prisma.post.createMany({
+    data: Array.from({ length: 500 }, (_, index) => {
+      return {
+        postId: postIdArr[index],
+        userId: 1,
+        content: JSON.stringify({}),
+        popular: randomNum(0, 100),
+        count: randomNum(10, 10000),
+        format: 'default',
+        lang: 'ko',
+        title: generateRandomDescription(15, 100),
+        description: ['', generateRandomDescription(8, 100)][
+          Math.floor(Math.random() * 2)
+        ],
+        type: 'polling',
+        thumbnail: `https://picsum.photos/id/${index * 10}/1200/800`,
+      };
+    }),
+  });
 
   // await prisma.post.createMany({
   //   data: Array.from({ length: 3 }, (_, index) => {

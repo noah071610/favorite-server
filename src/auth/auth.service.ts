@@ -1,10 +1,4 @@
-import {
-  BadRequestException,
-  ConflictException,
-  Inject,
-  Injectable,
-  InternalServerErrorException,
-} from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { prismaExclude } from 'src/config/database/prismaExclude';
 import { DatabaseService } from 'src/database/database.service';
@@ -13,8 +7,9 @@ import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import { ConfigService } from '@nestjs/config';
 import { Prisma } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
+import { ErrorMessage } from 'src/error/messages';
 import getRandomColor from 'src/util/getRandomColor';
-import { Payload, PayloadForValidate } from './dto/payload.interface';
+import { PayloadDto, PayloadForValidateDto } from './dto/payload.interface';
 
 @Injectable()
 export class AuthService {
@@ -32,7 +27,7 @@ export class AuthService {
 
   async register(userDTO: Prisma.UserCreateInput, accessToken?: string) {
     if (!userDTO.userName.trim()) {
-      throw new BadRequestException('noUserName');
+      throw new HttpException(ErrorMessage.noUserName, HttpStatus.BAD_REQUEST);
     }
 
     if (
@@ -40,14 +35,17 @@ export class AuthService {
         /^([a-zA-Z0-9._%+-]+)@([a-zA-Z0-9.-]+)\.([a-zA-Z]{2,})$/,
       )
     ) {
-      throw new BadRequestException('invalidEmail');
+      throw new HttpException(
+        ErrorMessage.invalidEmail,
+        HttpStatus.BAD_REQUEST,
+      );
     }
     if (!userDTO.email.trim()) {
-      throw new BadRequestException('noEmail');
+      throw new HttpException(ErrorMessage.noEmail, HttpStatus.BAD_REQUEST);
     }
 
     if (userDTO.provider === 'local' && !userDTO.password.trim()) {
-      throw new BadRequestException('noPassword');
+      throw new HttpException(ErrorMessage.noPassword, HttpStatus.BAD_REQUEST);
     }
 
     const findUser = await this.databaseService.user.findUnique({
@@ -66,10 +64,14 @@ export class AuthService {
             user: findUser,
           };
         } else {
-          throw new InternalServerErrorException('unknown');
+          throw new HttpException(
+            ErrorMessage.unknown,
+            HttpStatus.INTERNAL_SERVER_ERROR,
+          );
         }
       }
-      throw new ConflictException('existEmail');
+
+      throw new HttpException(ErrorMessage.existEmail, HttpStatus.CONFLICT);
     } else {
       const password = userDTO.password
         ? await this.transformPassword(userDTO)
@@ -91,7 +93,7 @@ export class AuthService {
     provider,
     accessToken,
     password,
-  }: PayloadForValidate) {
+  }: PayloadForValidateDto) {
     const findUser = await this.databaseService.user.findUnique({
       where: {
         email,
@@ -99,11 +101,17 @@ export class AuthService {
     });
 
     if (!findUser) {
-      throw new BadRequestException('loginFailBadRequest');
+      throw new HttpException(
+        ErrorMessage.loginFailBadRequest,
+        HttpStatus.BAD_REQUEST,
+      );
     }
 
     if (provider === 'local' && findUser.provider !== 'local') {
-      throw new ConflictException(`alreadySignup_${findUser.provider}`);
+      throw new HttpException(
+        { msg: ErrorMessage.existEmail, data: findUser.provider },
+        HttpStatus.CONFLICT,
+      );
     }
 
     if (provider !== 'local') {
@@ -112,7 +120,7 @@ export class AuthService {
       await this.cacheManager.del(accessToken);
 
       if (emailCache !== email) {
-        throw new BadRequestException('unknown');
+        throw new HttpException(ErrorMessage.unknown, HttpStatus.BAD_REQUEST);
       }
     } else {
       if (!password?.trim()) return { msg: 'loginFailBadRequest', user: null };
@@ -125,7 +133,7 @@ export class AuthService {
       }
     }
 
-    const payload: Payload = {
+    const payload: PayloadDto = {
       userId: findUser.userId,
       email: findUser.email,
     };
@@ -147,7 +155,7 @@ export class AuthService {
     };
   }
 
-  async tokenValidateUser(payload: Payload): Promise<any | undefined> {
+  async tokenValidateUser(payload: PayloadDto): Promise<any | undefined> {
     return await this.databaseService.user.findUnique({
       where: {
         userId: payload.userId,
@@ -172,7 +180,7 @@ export class AuthService {
   }
 
   async refreshToken(user: any) {
-    const payload: Payload = {
+    const payload: PayloadDto = {
       userId: user.userId,
       email: user.email,
     };

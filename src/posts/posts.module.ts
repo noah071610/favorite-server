@@ -1,14 +1,20 @@
 import { Module } from '@nestjs/common';
-import { JwtModule } from '@nestjs/jwt';
-import { PassportModule } from '@nestjs/passport';
 import { AuthService } from 'src/auth/auth.service';
-import { JwtStrategy } from 'src/auth/strategies/passport.jwt.strategy';
+import { CachedService } from 'src/cache/cached.service';
+import { DatabaseService } from 'src/database/database.service';
+import { JwtStrategy } from '../auth/strategies/passport.jwt.strategy';
 import { PostsController } from './posts.controller';
 import { PostsService } from './posts.service';
 
 @Module({
-  imports: [PassportModule, JwtModule.register({})],
+  imports: [],
   controllers: [PostsController],
-  providers: [PostsService, AuthService, JwtStrategy],
+  providers: [
+    PostsService,
+    AuthService,
+    JwtStrategy,
+    CachedService,
+    DatabaseService,
+  ],
 })
 export class PostsModule {}

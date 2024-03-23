@@ -1,12 +1,18 @@
 import { CacheModule } from '@nestjs/cache-manager';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { JwtModule } from '@nestjs/jwt';
+import { PassportModule } from '@nestjs/passport';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { AdminModule } from './admin/admin.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
+import { CachedService } from './cache/cached.service';
+import { CommentModule } from './comment/comment.module';
 import { DatabaseModule } from './database/database.module';
+import { TransformInterceptor } from './interceptor/transform.interceptor';
 import { PostModule } from './post/post.module';
 import { PostsModule } from './posts/posts.module';
 import { UploadModule } from './upload/upload.module';
@@ -23,6 +29,10 @@ const redisStore = require('cache-manager-redis-store').redisStore;
       host: 'localhost',
       port: 6379,
     }),
+    JwtModule.register({
+      global: true,
+    }),
+    PassportModule,
     ConfigModule.forRoot({ isGlobal: true }),
     PostModule,
     DatabaseModule,
@@ -39,6 +49,8 @@ const redisStore = require('cache-manager-redis-store').redisStore;
       ],
     }),
     PostsModule,
+    AdminModule,
+    CommentModule,
   ],
   controllers: [AppController],
   providers: [
@@ -47,6 +59,11 @@ const redisStore = require('cache-manager-redis-store').redisStore;
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
     },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: TransformInterceptor,
+    },
+    CachedService,
   ],
 })
 export class AppModule {}

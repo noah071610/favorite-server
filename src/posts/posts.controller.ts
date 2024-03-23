@@ -7,7 +7,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
-import { PostFindQuery } from 'src/types';
+import { LangType, PostFindQuery } from 'src/post/dto/post.dto';
 import { PostsService } from './posts.service';
 
 @Controller('posts')
@@ -20,19 +20,25 @@ export class PostsController {
   findAllPosts(
     @Query('query') query: PostFindQuery,
     @Query('sort') sort: 'createdAt' | 'lastPlayedAt',
+    @Query('lang') lang: LangType,
     @Query('cursor', ParseIntPipe) cursor: number,
   ) {
-    return this.postsService.findAllPosts(query, sort, cursor);
+    return this.postsService.findAllPosts(query, sort, cursor, lang);
+  }
+
+  @Get('count')
+  getAllPostsCount(@Query('query') query: PostFindQuery) {
+    return this.postsService.getAllPostsCount(query);
   }
 
   @Get('popular')
-  findPopularPosts() {
-    return this.postsService.findPopularPosts();
+  findPopularPosts(@Query('lang') lang: LangType) {
+    return this.postsService.findPopularPosts(lang);
   }
 
   @Get('template')
-  findTemplatePosts() {
-    return this.postsService.findTemplatePosts();
+  findTemplatePosts(@Query('lang') lang: LangType) {
+    return this.postsService.findTemplatePosts(lang);
   }
 
   @Get('search')
@@ -42,7 +48,13 @@ export class PostsController {
 
   @UseGuards(AuthGuard)
   @Get('user')
-  findUserSavePosts(@Req() req) {
-    return this.postsService.findUserSavePosts(req.user.userId);
+  findUserSavePosts(@Req() req, @Query('cursor', ParseIntPipe) cursor: number) {
+    return this.postsService.findUserSavePosts(cursor, req.user.userId);
+  }
+
+  @UseGuards(AuthGuard)
+  @Get('user/count')
+  getAllUserSaveCount(@Req() req) {
+    return this.postsService.getAllUserSaveCount(req.user.userId);
   }
 }

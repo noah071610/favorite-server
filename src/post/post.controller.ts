@@ -9,13 +9,16 @@ import {
   Put,
   Query,
   Req,
+  UseFilters,
   UseGuards,
 } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
+import { HttpExceptionFilter } from 'src/filter/http-exception.filter';
 import { PostDto } from './dto/post.dto';
+import { SaveUpdateDto } from './dto/save.dto';
 import { PostService } from './post.service';
 
+@UseFilters(new HttpExceptionFilter())
 @Controller('post')
 export class PostController {
   constructor(private readonly postService: PostService) {}
@@ -42,13 +45,13 @@ export class PostController {
   // new post flow
   @UseGuards(AuthGuard)
   @Post('init')
-  initNewPost(@Req() req) {
-    return this.postService.initNewPost(req.user.userId);
+  initNewPost(@Query('lang') lang, @Req() req) {
+    return this.postService.initNewPost(req.user.userId, lang);
   }
 
   @UseGuards(AuthGuard)
   @Post('save')
-  save(@Body() data: any, @Req() req) {
+  save(@Body() data: SaveUpdateDto, @Req() req) {
     return this.postService.save(data, req.user.userId);
   }
 
@@ -75,13 +78,5 @@ export class PostController {
   @Delete()
   delete(@Req() req, @Query('postId') postId: string) {
     return this.postService.delete(postId, req.user.userId);
-  }
-
-  @Post('comment')
-  createComment(
-    @Body()
-    data: Prisma.CommentCreateInput,
-  ) {
-    return this.postService.createComment(data);
   }
 }

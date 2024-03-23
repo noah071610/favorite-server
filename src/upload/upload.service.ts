@@ -1,6 +1,7 @@
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { ErrorMessage } from 'src/error/messages';
 
 @Injectable()
 export class UploadService {
@@ -24,12 +25,12 @@ export class UploadService {
       });
       try {
         await this.s3Client.send(command);
-        return {
-          msg: 'ok',
-          imageSrc: `https://${this.configService.getOrThrow('AWS_BUCKET_NAME')}.s3.ap-northeast-2.amazonaws.com/${fileName}`,
-        };
+        return `https://${this.configService.getOrThrow('AWS_BUCKET_NAME')}.s3.ap-northeast-2.amazonaws.com/${fileName}`;
       } catch {
-        throw new InternalServerErrorException();
+        throw new HttpException(
+          ErrorMessage.unknown,
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
       }
     }
   }

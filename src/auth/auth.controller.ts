@@ -5,17 +5,23 @@ import {
   Post,
   Req,
   Res,
+  UseFilters,
   UseGuards,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
+import { HttpExceptionFilter } from 'src/filter/http-exception.filter';
 import { AuthService } from './auth.service';
-import { PayloadForValidate, RegisterUser } from './dto/payload.interface';
+import {
+  PayloadForValidateDto,
+  RegisterUserDto,
+} from './dto/payload.interface';
 import { AuthGuard } from './guards/auth.guard';
 import { FacebookOauthGuard } from './guards/facebook-oauth.guard';
 import { GoogleOauthGuard } from './guards/google-oauth.guard';
 import { InstagramOauthGuard } from './guards/instagram-oauth.guard';
 import { RefreshJwtGuard } from './guards/refresh-jwt-auth.guard';
 
+@UseFilters(new HttpExceptionFilter())
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
@@ -40,7 +46,6 @@ export class AuthController {
   isAuthenticated(@Req() req) {
     return {
       msg: 'ok',
-      accessToken: null,
       user: req.user,
     };
   }
@@ -52,7 +57,7 @@ export class AuthController {
   }
 
   @Post('user')
-  async register(@Body() data: RegisterUser, @Res() res: Response) {
+  async register(@Body() data: RegisterUserDto, @Res() res: Response) {
     const { accessToken, ...user } = data;
 
     const registerRes = await this.authService.register(user, accessToken);
@@ -70,7 +75,7 @@ export class AuthController {
   @Post('login')
   async login(
     @Body()
-    payload: PayloadForValidate,
+    payload: PayloadForValidateDto,
     @Res() res: Response,
   ) {
     const { user, msg, accessToken, refreshToken } =
@@ -117,7 +122,7 @@ export class AuthController {
   @UseGuards(GoogleOauthGuard)
   @Get('google/callback')
   async googleLoginCallback(@Req() req, @Res() res: Response) {
-    await this.register(req.user as RegisterUser, res);
+    await this.register(req.user as RegisterUserDto, res);
   }
 
   // FACEBOOK
@@ -130,7 +135,7 @@ export class AuthController {
   @UseGuards(FacebookOauthGuard)
   @Get('facebook/callback')
   async facebookLoginCallback(@Req() req, @Res() res: Response) {
-    await this.register(req.user as RegisterUser, res);
+    await this.register(req.user as RegisterUserDto, res);
   }
 
   // INSTAGRAM
@@ -143,7 +148,7 @@ export class AuthController {
   @UseGuards(InstagramOauthGuard)
   @Get('instagram/callback')
   async instagramLoginCallback(@Req() req, @Res() res: Response) {
-    await this.register(req.user as RegisterUser, res);
+    await this.register(req.user as RegisterUserDto, res);
   }
 
   // TWITTER 잠정 중단

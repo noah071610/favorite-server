@@ -17,8 +17,8 @@ model User {
   password String?
   provider String
   userName  String
-  color String?
-  userImage  String?
+  color String
+  userImage  String
 
   saves Save[]
   posts Post[]
@@ -38,8 +38,9 @@ model Save {
   description String
   popular Int @default(0)
   count Int @default(0)
+  lang String
   
-  content Json
+  content String
 
   userId Int
   user User  @relation(fields: [userId], references: [userId])
@@ -60,8 +61,9 @@ model Post {
   description String
   popular Int @default(0)
   count Int @default(0)
+  lang String
   
-  content Json
+  content String
 
 
   userId Int
@@ -79,8 +81,6 @@ model Post {
   @@index([description], name: "description_fulltext_idx")
 }
 
-
-
 model Comment {
   commentId  Int  @id  @default(autoincrement())
   text String
@@ -92,6 +92,14 @@ model Comment {
   user User  @relation(fields: [userId], references: [userId])
 
   createdAt DateTime @default(now())
+}
+
+model HomepageData {
+  id Int @unique @default(autoincrement())
+  lang String
+  name String
+  data String
+  rawData String
 }
 
 

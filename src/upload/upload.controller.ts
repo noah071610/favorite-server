@@ -2,13 +2,16 @@ import {
   Controller,
   Post,
   UploadedFile,
+  UseFilters,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
+import { HttpExceptionFilter } from 'src/filter/http-exception.filter';
 import { UploadService } from './upload.service';
 
+@UseFilters(new HttpExceptionFilter())
 @Controller('upload')
 export class UploadController {
   constructor(private readonly uploadService: UploadService) {}

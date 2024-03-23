@@ -1,17 +1,31 @@
 import { Prisma } from '@prisma/client';
+import { IsInt, IsOptional, IsString } from 'class-validator';
 
-export interface Payload {
+export class PayloadDto {
+  @IsInt()
   userId: number;
+
+  @IsString()
   email: string;
 }
 
-export interface PayloadForValidate {
+export class PayloadForValidateDto {
+  @IsString()
   email: string;
+
+  @IsOptional()
+  @IsString()
   provider?: string;
+
+  @IsOptional()
+  @IsString()
   accessToken?: string;
+
+  @IsOptional()
+  @IsString()
   password?: string;
 }
 
-export interface RegisterUser extends Prisma.UserCreateInput {
+export interface RegisterUserDto extends Prisma.UserCreateInput {
   accessToken?: string;
 }
